@@ -9,20 +9,19 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 
-public class Life extends JFrame implements MouseListener, KeyListener, Runnable{
-    public static final int w = 512;
-    public static final int h = 512;
-    public static final int k = w*h;
+public class Life_x2 extends JFrame implements MouseListener, KeyListener, Runnable{
+    public static int w = 512;
+    public static int h = 512;
+    public static int k = w*h;
     public static byte[] pole = new byte[k];
     public static byte[] npole = new byte[k];
-    public static Life win = new Life();
+    public static Life_x2 win = new Life_x2();
     public static long delay = 100L;
     public static boolean timer = true;
     public static String slname = "save.life";
     public static String[] cline;
     public static boolean mes_b = true;
     public static String mes_s = "Hello Life!!!";
-    public static boolean prnt = true;
 
     public static void main(String[] args){
         cline = args;
@@ -30,11 +29,11 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             if (!loadLife(slname)) randLife(false);
         } else randLife(false);
         win.setUndecorated(true);
-        win.setSize(w*4+20,h*4+70);
-        win.setBackground(new Color(0x101010));
+        win.setSize(w*8+20,h*8+70);
         win.setDefaultCloseOperation(3);
         win.setResizable(false);
         win.setTitle("Life");
+        win.setBackground(new Color(0x101010));
         win.setVisible(true);
         win.addMouseListener(win);
         win.addKeyListener(win);        
@@ -58,32 +57,25 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
 
     @Override
     public void paint(Graphics g){
-        if(prnt) {
-            prnt = false;
-            for(int i=0; i < k; i++){
-                int x = ((i & (w-1))<<2)+10;
-                int y = ((int)(i / w)<<2)+40;
-                switch(pole[i]){ 
-                    case 0: g.setColor(Color.BLACK); break;
-                    case 1: g.setColor(Color.WHITE); break;
-                    case 2: g.setColor(Color.RED); break;
-                    case 3: g.setColor(Color.ORANGE); break;
-                    case 4: g.setColor(Color.YELLOW); break;
-                    case -1: g.setColor(Color.DARK_GRAY); 
-                }
-                g.fillRect(x,y,3,3);                   
+        for(int i=0; i < k; i++){
+            int x = ((i & (w-1))<<3)+10;
+            int y = ((int)(i / w)<<3)+40;
+            switch(pole[i]){ 
+                case 0: g.setColor(Color.BLACK); break;
+                case 1: g.setColor(Color.WHITE); break;
+                case 2: g.setColor(Color.RED); break;
+                case 3: g.setColor(Color.ORANGE); break;
+                case 4: g.setColor(Color.YELLOW); break;
+                case -1: g.setColor(Color.DARK_GRAY); 
             }
-            if(mes_b){
-                g.setColor(Color.BLACK);
-                g.fillRect(10,h*4+41, w*4, 20);
-                g.setColor(Color.ORANGE);
-                g.drawString(mes_s, 15, h*4+56);
-                mes_b = false;
-            }
-            try{
-                Thread.sleep(20);
-                prnt = true;
-            }catch (Exception e){}
+            g.fillRect(x,y,7,7);                   
+        }
+        if(mes_b){
+            g.setColor(Color.BLACK);
+            g.fillRect(10,h*8+41, w*8, 20);
+            g.setColor(Color.ORANGE);
+            g.drawString(mes_s, 15, h*8+56);
+            mes_b = false;
         }
     }
 
@@ -91,6 +83,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         byte c;
         int z;
         for(int i = 0; i < k; i++){
+            npole[i] = 0;
             c = 0;
             z = i & (w-1);
             if((i - w) >= 0){
@@ -106,13 +99,16 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             if(z > 0) if(pole[i-1] > 0) c++;
             if(z < (w-1)) if(pole[i+1] > 0) c++;
 
-            npole[i] = 0;
             if((c > 3)||(c < 2)){
-                if(pole[i] > 0)
+                if(pole[i] < 1){
+                    npole[i] = 0;
+                }else{
                     npole[i] = -1;
+                }
             } else {
                 if(c == 3 || pole[i] > 0) npole[i] = c;
                 if(c == 3 && pole[i] == 0) npole[i] = 4;
+                 
             }
         }
         byte[] tmp = pole;
@@ -130,8 +126,8 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     }
 
     public void mousePressed(MouseEvent p){
-        int x = (p.getX()-12) >> 2;
-        int y = (p.getY()-42) >> 2;
+        int x = (p.getX()-10) >> 3;
+        int y = (p.getY()-40) >> 3;
         System.out.println("x="+ x +" y=" + y);
         if(x>=0 && x<w && y>=0 && y<h){
             int z=x+(y*w);
@@ -162,9 +158,9 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
                 timer = true;
             }
             break;
-            case 107: if(delay>0) delay -= 5; message("delay :" + delay); //Up - speed up
+            case 107: if(delay>0) delay -= 5;  //Up - speed up
             break;
-            case 109: delay += 5; message("delay :" + delay);              //Down - speed down 
+            case 109: delay += 5;               //Down - speed down 
             break;
             case '0': commline();
             message("save/load file name: " + slname);
@@ -184,7 +180,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             case 40: win.setLocation(win.getX(), win.getY()-10); break;
             case 39: win.setLocation(win.getX()-10, win.getY()); break;
             case 37: win.setLocation(win.getX()+10, win.getY()); break;
-            default: message("Key :" + v.getKeyCode()); steping();
+            default: steping(); message("Kode: " + v.getKeyCode());
         }
         win.repaint();               
     }
