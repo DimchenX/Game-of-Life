@@ -10,9 +10,10 @@ import java.awt.event.KeyListener;
 import javax.swing.JFrame;
 
 public class Life extends JFrame implements MouseListener, KeyListener, Runnable{
-    public static final int w = 512;
-    public static final int h = 512;
+    public static final int w = 460;
+    public static final int h = 240;
     public static final int k = w*h;
+    public static final int ps = 6;
     public static byte[] pole = new byte[k];
     public static byte[] npole = new byte[k];
     public static Life win = new Life();
@@ -30,8 +31,8 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             if (!loadLife(slname)) randLife(false);
         } else randLife(false);
         win.setUndecorated(true);
-        win.setSize(w*4+20,h*4+70);
-        win.setBackground(new Color(0x101010));
+        win.setSize(w*ps+20,h*ps+70);
+        win.setBackground(new Color(0x202020));
         win.setDefaultCloseOperation(3);
         win.setResizable(false);
         win.setTitle("Life");
@@ -60,9 +61,9 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     public void paint(Graphics g){
         if(prnt) {
             prnt = false;
-            for(int i=0; i < k; i++){
-                int x = ((i & (w-1))<<2)+10;
-                int y = ((int)(i / w)<<2)+40;
+            int i = 0;
+            for(int y = 0; y < h; y++)
+            for(int x = 0; x < w; x++){ 
                 switch(pole[i]){ 
                     case 0: g.setColor(Color.BLACK); break;
                     case 1: g.setColor(Color.WHITE); break;
@@ -71,40 +72,39 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
                     case 4: g.setColor(Color.YELLOW); break;
                     case -1: g.setColor(Color.DARK_GRAY); 
                 }
-                g.fillRect(x,y,3,3);                   
+                g.fillRect((x*ps)+10,(y*ps)+40,ps-1,ps-1);
+                i++;                   
             }
             if(mes_b){
                 g.setColor(Color.BLACK);
-                g.fillRect(10,h*4+41, w*4, 20);
+                g.fillRect(10,h*ps+41, w*ps, 20);
                 g.setColor(Color.ORANGE);
-                g.drawString(mes_s, 15, h*4+56);
+                g.drawString(mes_s, 15, h*ps+56);
                 mes_b = false;
             }
-            try{
-                Thread.sleep(20);
-                prnt = true;
-            }catch (Exception e){}
+            prnt = true;
         }
     }
 
     public static void steping(){
         byte c;
         int z;
-        for(int i = 0; i < k; i++){
+        int i = 0;
+        for(int y = 0; y < h; y++)
+        for(int x = 0; x < w; x++){
             c = 0;
-            z = i & (w-1);
             if((i - w) >= 0){
-                if(z > 0) if(pole[i-(w+1)] > 0) c++;
-                if(z < (w-1)) if(pole[i-(w-1)] > 0) c++;               
+                if(x > 0) if(pole[i-(w+1)] > 0) c++;
+                if(x < (w-1)) if(pole[i-(w-1)] > 0) c++;               
                 if(pole[i-w] > 0) c++;                        
             }
             if((i + w) < k){
-                if(z > 0) if(pole[i+(w-1)] > 0) c++;
-                if(z < (w-1)) if(pole[i+(w+1)] > 0) c++;
+                if(x > 0) if(pole[i+(w-1)] > 0) c++;
+                if(x < (w-1)) if(pole[i+(w+1)] > 0) c++;
                 if(pole[i+w] > 0) c++;                
             }
-            if(z > 0) if(pole[i-1] > 0) c++;
-            if(z < (w-1)) if(pole[i+1] > 0) c++;
+            if(x > 0) if(pole[i-1] > 0) c++;
+            if(x < (w-1)) if(pole[i+1] > 0) c++;
 
             npole[i] = 0;
             if((c > 3)||(c < 2)){
@@ -114,6 +114,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
                 if(c == 3 || pole[i] > 0) npole[i] = c;
                 if(c == 3 && pole[i] == 0) npole[i] = 4;
             }
+            i++;
         }
         byte[] tmp = pole;
         pole = npole;
@@ -130,8 +131,8 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     }
 
     public void mousePressed(MouseEvent p){
-        int x = (p.getX()-12) >> 2;
-        int y = (p.getY()-42) >> 2;
+        int x = (p.getX()-12) / ps;
+        int y = (p.getY()-42) / ps;
         System.out.println("x="+ x +" y=" + y);
         if(x>=0 && x<w && y>=0 && y<h){
             int z=x+(y*w);
