@@ -1,1 +1,3 @@
-javac Life.java && jar cfe Life.jar Life Life.class Life.java Life.bat && javaw -jar Life.jar
+cd /d "%~dp0"
+javac Life.java && jar cfe Life.jar Life Life.class Life.java && java Life %*
+pause
