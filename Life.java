@@ -32,13 +32,13 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     public static boolean pixadd = false;
     public static BufferedImage img = new BufferedImage(ww, wh, 1);
     public static int ctrl = 1;
-    public static final int[] col = {0xFF404000, 0x22000000, 0xFFFFFFFF, 0xEEFF3300, 0xEEFFAA00, 0xEEFFFF00};
+    public static final int[] col = {0xFF404040, 0x22000000, 0xFFFFFFFF, 0xEEFF3300, 0xEEFFAA00, 0xEEFFFF00};
 
     public static void main(String[] args){
         cline = args;
         if(commline()){
-            if (!loadLife(slname)) randLife(false);
-        } else randLife(false);
+            if (!loadLife(slname)) randLife();
+        } else randLife();
         win.setSize(ww+20,wh+70);
         win.setDefaultCloseOperation(3);
         win.setResizable(false);
@@ -68,7 +68,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     @Override
     public void paint(Graphics g){
         if(prnt) {
-            pixelimgrect(lw, lx, ly, ww / ps, wh / ps, ps, pole, 0xFF080808);
+            pixelimgrect(lw, lx, ly, ww / ps, wh / ps, ps, pole, 0xFF101010);
             g.drawImage(img, 10, 40, null);
             
             if(mes_b){
@@ -93,11 +93,9 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             X = 0;                //ps-1 строки             
                 for(int x = 0; x < w; x++){            //риксели в строке
                     for(int p = 0; p < (pix-1); p++){       // ps-1 пиксель
-                        img.setRGB(X, Y, col[inm[i]+1]);         //копируем пиксели
-                        X++;
+                        img.setRGB(X++, Y, col[inm[i]+1]);         //копируем пиксели
                     }
-                    img.setRGB(X,Y,rc);            // пустой пиксель
-                    X++;           
+                    img.setRGB(X++,Y,rc);            // пустой пиксель          
                     i++;                   
                 }
                 i-=w;
@@ -131,7 +129,6 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             if(x > 0) if(pole[i-1] > 0) c++;
             if(x < (lw-1)) if(pole[i+1] > 0) c++;
 
-            npole[i] = 0;
             if((c > 3)||(c < 2)){
                 if(pole[i] < 1){
                     npole[i] = 0;
@@ -139,6 +136,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
                     npole[i] = -1;
                 }
             } else {
+                npole[i] = 0;
                 if(c == 3 || pole[i] > 0) npole[i] = c;
                 if(c == 3 && pole[i] == 0) npole[i] = 4;
             }
@@ -150,11 +148,11 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         win.repaint();
     }  
 
-    public static void randLife(boolean rev){
+    public static void randLife(){
         for(int i = 0; i < lw*lh; i++) {
             if(Math.random()*12 > 11){
                  pole[i] = 1;
-            }else if(rev)pole[i] = 0; 
+            }else if(ctrl == 1)pole[i] = 0; 
         }
         pixadd = false;
         win.repaint();
@@ -165,7 +163,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         int y = (p.getY()-42) / ps + ly;
         System.out.println("x="+ x +" y=" + y);
         if(x>=0 && x<lw && y>=0 && y<lh){
-            int z=x+(y*lw);
+            int z=y*lw+x;
             if(z<lk){
                 if(pole[z]>0){
                     pole[z] = 0;
@@ -177,9 +175,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     
     public void keyPressed(KeyEvent v){
         switch(v.getKeyCode()){
-            case 'A': pixadd = true;   //Add random pixels
-            break;
-            case 'N': randLife(true);    //New random pixels
+            case 'N': pixadd = true;   //Add random pixels    //New random pixels
             break;
             case 'S': saveLife(slname);        //Save to file
             break;
@@ -217,9 +213,9 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             case  37: lx-=ctrl; setXY(); break;
             case  80: resizer(+1); break; 
             case  79: resizer(-1); break;
-            case  73: resizer(0); break;
+            case  73: setXY(); break;
             case  17: ctrl = 5; break;
-            default: message("Key :" + v.getKeyCode()); steping();
+            //default: message("Key :" + v.getKeyCode()); steping();
 
         }
         win.repaint();               
@@ -227,14 +223,12 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
 
     public static void resizer(int r){
         if((ps > 2 && r < 0) || (ps < 32 && r > 0)) {
-            int lyc = ly + (wh/ps)/2;
-            int lxc = lx + (ww/ps)/2;
+            ly += (wh/ps)/2 - wh/(ps+r)/2;
+            lx += (ww/ps)/2 - ww/(ps+r)/2;
             ps+=r;
-            ly = lyc - (wh/ps)/2;
-            lx = lxc - (ww/ps)/2;
             setXY();
         }
-        message("pixel size:" + ps + " posit: " + lx + "/" + ly);
+        
     } 
     
     public static void setXY(){
@@ -242,6 +236,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         if(lx < 0) lx=0;
         if(ly>lh-(wh/ps)) ly=lh-(wh/ps);
         if(lx>lw-(ww/ps)) lx=lw-(ww/ps);
+        message("pixel size:" + ps + " posit: " + lx + "/" + ly);
     }
     
     public static void saveLife(String name){
@@ -294,7 +289,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             try{
                 Thread.sleep(delay);
             }catch(Exception e){}
-            if(pixadd)randLife(false);
+            if(pixadd)randLife();
             if(timer)steping();  
         }
     }
