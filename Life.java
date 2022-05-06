@@ -215,7 +215,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             case  79: resizer(-1); break;
             case  73: setXY(); break;
             case  17: ctrl = 5; break;
-            //default: message("Key :" + v.getKeyCode()); steping();
+            default:   steping(); // message("Key :" + v.getKeyCode());
 
         }
         win.repaint();               
