@@ -30,9 +30,14 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     public static String mes_s = "Hello Life!!!";
     public static boolean prnt = true;
     public static boolean pixadd = false;
+    public static boolean clear = false;
     public static BufferedImage img = new BufferedImage(ww, wh, 1);
     public static int ctrl = 1;
     public static final int[] col = {0xFF404040, 0x22000000, 0xFFFFFFFF, 0xEEFF3300, 0xEEFFAA00, 0xEEFFFF00};
+    public static int px;
+    public static int py;
+    public static boolean pw = false;
+
 
     public static void main(String[] args){
         cline = args;
@@ -68,7 +73,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
     @Override
     public void paint(Graphics g){
         if(prnt) {
-            pixelimgrect(lw, lx, ly, ww / ps, wh / ps, ps, pole, 0xFF101010);
+            pixelimgrect(lw, lx, ly, ww / ps, wh / ps, ps, pole, 0xFF080808);
             g.drawImage(img, 10, 40, null);
             
             if(mes_b){
@@ -152,18 +157,22 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         for(int i = 0; i < lw*lh; i++) {
             if(Math.random()*12 > 11){
                  pole[i] = 1;
-            }else if(ctrl == 1)pole[i] = 0; 
+            }else if(ctrl == 0)pole[i] = 0; 
         }
         pixadd = false;
         win.repaint();
     }
 
     public void mousePressed(MouseEvent p){
-        int x = (p.getX()-12) / ps + lx;
-        int y = (p.getY()-42) / ps + ly;
-        System.out.println("x="+ x +" y=" + y);
-        if(x>=0 && x<lw && y>=0 && y<lh){
-            int z=y*lw+x;
+        px = (p.getX()-12) / ps + lx;
+        py = (p.getY()-42) / ps + ly;
+        System.out.println("x="+ px +" y=" + py);
+        pw=true;
+    }
+    
+    public static void pixwriter(){
+        if(px>=0 && px<lw && py>=0 && py<lh){
+            int z=px+(py*lw);
             if(z<lk){
                 if(pole[z]>0){
                     pole[z] = 0;
@@ -171,17 +180,19 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             }
             win.repaint();
         }
+        pw=false;
+            
     }
     
     public void keyPressed(KeyEvent v){
         switch(v.getKeyCode()){
-            case 'N': pixadd = true;   //Add random pixels    //New random pixels
+            case 'N': pixadd = true;;    //New random pixels
             break;
             case 'S': saveLife(slname);        //Save to file
             break;
             case 'L': loadLife(slname);        //Load from file
             break; 
-            case 'C': for(int i=0; i<lk; i++)pole[i]=0;   //Clear
+            case 'C': clear = true;   //Clear
             break;
             case 32: if(timer){         //Pause\Start run of game
                 timer = false; 
@@ -211,24 +222,31 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             case  38: ly-=ctrl; setXY(); break;
             case  39: lx+=ctrl; setXY(); break;
             case  37: lx-=ctrl; setXY(); break;
-            case  80: resizer(+1); break; 
-            case  79: resizer(-1); break;
-            case  73: setXY(); break;
+            case  'P': resizer(+1); break; 
+            case  'O': resizer(-1); break;
+            case  'I': setXY(); break;
             case  17: ctrl = 5; break;
-            default:   steping(); // message("Key :" + v.getKeyCode());
+            default: steping(); // message("Key :" + v.getKeyCode());
 
         }
         win.repaint();               
     }
+    
+    public static void clearing(){
+      for(int i = 0; i < lk; i++) pole[i] = 0;
+      clear = false; 
+      win.repaint();
+    }
 
     public static void resizer(int r){
         if((ps > 2 && r < 0) || (ps < 32 && r > 0)) {
-            ly += (wh/ps)/2 - wh/(ps+r)/2;
-            lx += (ww/ps)/2 - ww/(ps+r)/2;
+            int lyc = ly + (wh/ps)/2;
+            int lxc = lx + (ww/ps)/2;
             ps+=r;
+            ly = lyc - (wh/ps)/2;
+            lx = lxc - (ww/ps)/2;
             setXY();
         }
-        
     } 
     
     public static void setXY(){
@@ -289,7 +307,9 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
             try{
                 Thread.sleep(delay);
             }catch(Exception e){}
+            if(clear)clearing();
             if(pixadd)randLife();
+            if(pw)pixwriter(); 
             if(timer)steping();  
         }
     }
