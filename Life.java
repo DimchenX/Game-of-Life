@@ -157,7 +157,7 @@ public class Life extends JFrame implements MouseListener, KeyListener, Runnable
         for(int i = 0; i < lw*lh; i++) {
             if(Math.random()*12 > 11){
                  pole[i] = 1;
-            }else if(ctrl == 0)pole[i] = 0; 
+            }else if(ctrl == 1)pole[i] = 0; 
         }
         pixadd = false;
         win.repaint();
